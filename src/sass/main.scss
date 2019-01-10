@@ -4,12 +4,28 @@
   width: 100vw;
   display: flex;
   justify-content: center;
+  .loading {
+    font-size: 0.2rem;
+    color: white;
+    top: calc(50% - 65px);
+    left: calc(50% - 65px);
+    position: absolute;
+    background: url(../images/loader1.gif) 0 0 no-repeat;
+    width: 130px;
+    height: 130px;
+    background-size: 100% 100%;
+    z-index: 1;
 
+    animation-name: spin;
+    animation-duration: 1000ms;
+    animation-iteration-count: infinite;
+    animation-timing-function: linear;
+  }
   .main {
     width: 100%;
-    border: 2px solid black;
     border-radius: 8px;
     padding-top: 50px;
+
     .home-nav {
       padding: 9px 50px;
     }
@@ -58,6 +74,8 @@
       }
     }
     .rotation-table {
+      border: 2px solid black;
+      margin-bottom: 100px;
       .row-actions {
         display: flex;
         flex-direction: column;

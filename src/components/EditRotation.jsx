@@ -1,182 +1,273 @@
 import React from "react";
-import NavBar from "./NavBar"
-import ReactMultiSelectCheckboxes from 'react-multiselect-checkboxes'
-import Select from 'react-select'
+import NavBar from "./NavBar";
+import GlobalActions from "../actions/GlobalActions";
+import Select from "react-select";
+import RotationStore from "../store/RotationStore";
+import If from "./common/If";
 
-const options = [
-  { value: 'vn', label: 'vn' },
-  { value: 'in', label: 'in' },
-  { value: 'us', label: 'us' }
-];
 const actionOptions = [
-  { value: 'appcenter_details', label: 'appcenter_details' },
-  { value: 'download', label: 'download' },
-  { value: 'open_in_browser', label: 'open_in_browser' },
-  { value: 'open_in_emulator', label: 'open_in_emulator' }
+  { value: "appcenter_details", label: "appcenter_details" },
+  { value: "download", label: "download" },
+  { value: "open_in_browser", label: "open_in_browser" },
+  { value: "open_in_emulator", label: "open_in_emulator" }
 ];
 class EditRotation extends React.Component {
   constructor(props, context) {
     super(props, context);
     this.state = {
       selectedPartner: null,
-      isGoing: false,
-      selectedAction: '',
-      menuBar: false,
-      data: {
-        rotation_id: '',
-        game_name: '',
-        package_name: 'coc',
-        action: [{ value: 'download', label: 'download' }],
-        sticky: false,
-        image_url: 'http://',
-        partner: [{ value: 'vn', label: 'vn' }, { value: 'in', label: 'in' }],
-        order: 1,
-        download_url: 'http://download'
+      selectedAction: "",
+      disableForm: false,
+      apiStatus: null,
+      formData: {
+        id: "",
+        game_name: "",
+        package_name: "",
+        action: [{ value: "download", label: "download" }],
+        sticky_app: false,
+        parameter: "",
+        title: "",
+        image_url: "",
+        selectedFile: null,
+        partner: "",
+        order: "",
+        download_url: ""
       }
-    }
+    };
     this.handleInputChange = this.handleInputChange.bind(this);
   }
 
+  onChange = () => {
+    this.setState({ apiStatus: RotationStore.state.apiStatus });
+    if (this.state.apiStatus != null) {
+      setTimeout(() => {
+        this.setState({ apiStatus: null });
+      }, 3500);
+    }
+  };
+  componentWillMount = () => {
+    GlobalActions.fetchRotationData.defer();
+  };
   componentDidMount = () => {
-    const { data } = this.props.location.state
-    this.setState({ data: data })
-  }
-  handleChange = (selectedPartner) => {
-    let data = this.state.data
-    data.partner = selectedPartner
-    this.setState({ data: data });
-  }
-  handleActionChange = (selectedAction) => {
-    let data = this.state.data
-    data.action = selectedAction
-    this.setState({ data: data });
-  }
-  openMenu = () => {
-    this.setState({ menuBar: true })
-  }
-  closeMenu = () => {
-    this.setState({ menuBar: false })
-  }
-  uploadImage = () => {
-    console.log('upload image')
-  }
+    const { data } = this.props.location.state;
+    let formData = {};
+    Object.assign(formData, data);
+    formData.action = [{ value: data.action, label: data.action }];
+    this.setState({ formData: formData });
+    RotationStore.listen(this.onChange);
+  };
+
+  componentWillUnmount = () => {
+    RotationStore.unlisten(this.onChange);
+  };
+
+  handleChange = selectedPartner => {
+    let data = this.state.formData;
+    data.partner = selectedPartner;
+    this.setState({ formData: data });
+  };
+  handleActionChange = selectedAction => {
+    let data = this.state.formData;
+    data.action = selectedAction;
+    this.setState({ formData: data });
+  };
+  uploadImage = event => {
+    let data = this.state.formData;
+    data.image_file = event.target.files[0];
+    this.setState({ formData: data });
+  };
+  deleteUploadedImage = () => {
+    let data = this.state.formData;
+    data.image_file = "";
+    this.setState({ formData: data });
+  };
   updatevalue = (name, event) => {
-
-    let data = this.state.data
-    data[name] = event.target.value
-    this.setState(
-      { varData: data }
-    );
-  }
-  handleInputChange = (event) => {
-    let data = this.state.data
+    let data = this.state.formData;
+    data[name] = event.target.value;
+    this.setState({ formData: data });
+  };
+  handleInputChange = event => {
+    let data = this.state.formData;
     const target = event.target;
-    const value = target.type === 'checkbox' ? target.checked : target.value;
-    data.sticky = value
+    const value = target.type === "checkbox" ? target.checked : target.value;
+    data.sticky_app = value;
     this.setState({
-      data: data
+      formData: data
     });
-  }
+  };
 
-  submitForm = (event) => {
-
-    console.log(this.state.data)
-    this.props.history.push("/");
-
-  }
+  onFormSubmit = event => {
+    GlobalActions.updateRotation(this.state.formData);
+    //this.props.history.push("/");
+  };
 
   render() {
-    let { menuBar, data } = this.state;
+    let { apiStatus, formData } = this.state;
+    return (
+      <div className="new-rotation container">
+        <NavBar page="Edit" />
+        <h2>Horizontal form</h2>
+        <If condition={apiStatus == "success"}>
+          <div className="alert alert-success">
+            <strong>Success!</strong> Data updated successfully
+          </div>
+        </If>
+        <If condition={apiStatus == "error"}>
+          <div className="alert alert-danger">
+            <strong>Failed!</strong> {apiStatus}
+          </div>
+        </If>
+        <form className="new-form form-horizontal">
+          <fieldset disabled={this.state.disableForm}>
+            <div className="form-group">
+              <label className="control-label col-sm-3">Order Id</label>
+              <div className="col-sm-9">
+                <input
+                  type="text"
+                  disabled
+                  onChange={this.updatevalue.bind(this, "id")}
+                  className="form-control"
+                  value={formData.id}
+                />
+              </div>
+            </div>
+            <div className="form-group">
+              <label className="control-label col-sm-3">Game Name</label>
+              <div id="game_name" className="col-sm-9 multi-select">
+                <input
+                  type="text"
+                  onChange={this.updatevalue.bind(this, "game_name")}
+                  className="form-control"
+                  value={formData.game_name}
+                />
+              </div>
+            </div>
 
-    console.log(data.partner)
-    return <div className="new-rotation container">
-      <NavBar page="Edit" />
-      <h2>Horizontal form</h2>
-      <form className="new-form form-horizontal" onSubmit={this.submitForm}>
-        <div className="form-group">
-          <label className="control-label col-sm-3">Order Id</label>
-          <div className="col-sm-9">
-            <input type="text" onChange={this.updatevalue.bind(this, 'rotation_id')} className="form-control" value={data.rotation_id} />
-          </div>
-        </div>
-        <div className="form-group">
-          <label className="control-label col-sm-3">Game Name</label>
-          <div id="game_name" className="col-sm-9 multi-select">
-            <input type="text" onChange={this.updatevalue.bind(this, 'game_name')} className="form-control" value={data.game_name} />
-          </div>
-        </div>
+            <div className="form-group">
+              <label className="control-label col-sm-3">Package Name</label>
+              <div className="col-sm-9">
+                <input
+                  type="text"
+                  disabled
+                  className="form-control"
+                  onChange={this.updatevalue.bind(this, "package_name")}
+                  value={formData.package_name}
+                />
+              </div>
+            </div>
+            <div className="form-group">
+              <label className="control-label col-sm-3">Action</label>
+              <div className="col-sm-9">
+                <Select
+                  value={formData.action}
+                  onChange={this.handleActionChange}
+                  options={actionOptions}
+                />
+              </div>
+            </div>
+            <div className="form-group">
+              <label className="control-label col-sm-3">Partner</label>
+              <div className="col-sm-9">
+                <input
+                  type="text"
+                  disabled
+                  className="form-control"
+                  value={formData.partner}
+                />
+              </div>
+            </div>
+            <div className="form-group">
+              <label className="control-label col-sm-3">Sticky App</label>
+              <div className="col-sm-9">
+                <input
+                  className="checkbox"
+                  type="checkbox"
+                  checked={formData.sticky_app}
+                  onChange={this.handleInputChange}
+                />
+              </div>
+            </div>
+            <div className="form-group">
+              <label className="control-label col-sm-3">Parameter</label>
+              <div className="col-sm-9">
+                <input
+                  type="text"
+                  className="form-control"
+                  onChange={this.updatevalue.bind(this, "parameter")}
+                  value={formData.parameter}
+                />
+              </div>
+            </div>
+            <div className="form-group">
+              <label className="control-label col-sm-3">Title</label>
+              <div className="col-sm-9">
+                <input
+                  type="text"
+                  className="form-control"
+                  onChange={this.updatevalue.bind(this, "title")}
+                  value={formData.title}
+                />
+              </div>
+            </div>
+            <div className="form-group">
+              <label className="control-label col-sm-3">Upload image</label>
+              <div className="col-sm-6">
+                <input
+                  type="text"
+                  className="form-control"
+                  onChange={this.updatevalue.bind(this, "image_url")}
+                  value={formData.image_url}
+                />
+              </div>
+              <div className="col-sm-3">
+                <input type="file" name="" id="" onChange={this.uploadImage} />
+                {/* <button type="button" onClick={this.deleteUploadedImage} className="btn btn-info btn-md ">
+              <span> Remove</span>
+            </button> */}
+              </div>
+            </div>
+            <div className="form-group">
+              <label className="control-label col-sm-3">order</label>
+              <div className="col-sm-9">
+                <input
+                  type="text"
+                  className="form-control"
+                  onChange={this.updatevalue.bind(this, "order")}
+                  value={formData.order}
+                  placeholder="0"
+                />
+              </div>
+            </div>
+            <div className="form-group">
+              <label className="control-label col-sm-3">Download url</label>
+              <div className="col-sm-9">
+                <input
+                  type="text"
+                  className="form-control"
+                  onChange={this.updatevalue.bind(this, "download_url")}
+                  value={formData.download_url}
+                />
+              </div>
+            </div>
 
-        <div className="form-group">
-          <label className="control-label col-sm-3">Package Name</label>
-          <div className="col-sm-9">
-            <input type="text" className="form-control" onChange={this.updatevalue.bind(this, 'package_name')} value={data.package_name} />
-          </div>
-        </div>
-        <div className="form-group">
-          <label className="control-label col-sm-3">Action</label>
-          <div className="col-sm-9">
-            <Select
-              value={data.action}
-              onChange={this.handleActionChange}
-              options={actionOptions}
-            />
-          </div>
-        </div>
-        <div className="form-group">
-          <label className="control-label col-sm-3">Partner</label>
-          <div className="col-sm-9 multi-select">
-            <Select
-              value={data.partner}
-              onChange={this.handleChange}
-              onMenuOpen={this.openMenu}
-              onMenuClose={this.closeMenu}
-              menuIsOpen={menuBar}
-              options={options}
-              isMulti="true"
-              isSearchable="true"
-            />
-          </div>
-        </div>
-        <div className="form-group">
-          <label className="control-label col-sm-3">Sticky App</label>
-          <div className="col-sm-9">
-            <input className="checkbox" type="checkbox" checked={data.isGoing}
-              onChange={this.handleInputChange} />
-          </div>
-        </div>
-        <div className="form-group">
-          <label className="control-label col-sm-3">Upload image</label>
-          <div className="col-sm-6">
-            <input type="text" className="form-control" onChange={this.updatevalue.bind(this, 'image_url')} value={data.image_url} />
-          </div>
-          <div className="col-sm-3">
-            <button type="button" onClick={this.uploadImage} className="btn btn-info btn-md ">
-              <span> Upload Image</span>
-            </button>
-          </div>
-        </div>
-        <div className="form-group">
-          <label className="control-label col-sm-3">order</label>
-          <div className="col-sm-9">
-            <input type="text" className="form-control" onChange={this.updatevalue.bind(this, 'order')} value={data.order} placeholder='0' />
-          </div>
-        </div>
-        <div className="form-group">
-          <label className="control-label col-sm-3">Download url</label>
-          <div className="col-sm-9">
-            <input type="text" className="form-control" onChange={this.updatevalue.bind(this, 'download_url')} value={data.download_url} />
-          </div>
-        </div>
-
-        <div className="form-group">
-          <div className="col-sm-offset-3 col-sm-9">
-            <button type="submit" className="btn btn-primary">Save</button>
-          </div>
-        </div>
-      </form>
-    </div>;
+            <div className="form-group">
+              <div className="col-sm-offset-3 col-sm-9">
+                <input
+                  type="button"
+                  onClick={this.onFormSubmit}
+                  className="btn btn-primary"
+                  value="Save"
+                />
+              </div>
+            </div>
+          </fieldset>
+        </form>
+        <If condition={apiStatus == "loading"}>
+          <div className="loading" />
+        </If>
+      </div>
+    );
   }
 }
-
 
 export default EditRotation;

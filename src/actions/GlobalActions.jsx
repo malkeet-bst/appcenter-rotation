@@ -3,10 +3,12 @@ import FluxApp from '../utils/FluxApp'
 class GlobalActions {
   constructor() {
     this.generateActions(
-      'fetchXpackInfo',
-      'fetchXpackVideos',
-      'fetchXpackLocalization',
-      'fetchRotationData'
+      'fetchRotationData',
+      'viewPartnerData',
+      'deleteRotationBanner',
+      'addRotation',
+      'setSelectedPartner',
+      'updateRotation'
     )
   }
 }
