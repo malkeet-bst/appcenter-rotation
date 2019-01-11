@@ -37,21 +37,25 @@ class NewRotation extends React.Component {
     };
   }
   componentDidMount = () => {
-    const { data } = this.props.location.state;
+    const { data } = this.props;
     let partnerList = [];
-    data.forEach(partner => {
-      partnerList.push({ value: partner, label: partner });
-    });
+    if(data){
+      data.forEach(partner => {
+        partnerList.push({ value: partner, label: partner });
+      });
+      this.setState({ partnerList });
+    }
+    
     RotationStore.listen(this.onChange);
-    this.setState({ partnerList });
+    
   };
   onChange = () => {
     this.setState({ apiStatus: RotationStore.state.apiStatus });
-    if (this.state.apiStatus != null) {
-      setTimeout(() => {
-        this.setState({ apiStatus: null })
-      }, 3500)
-    }
+    // if (this.state.apiStatus != null) {
+    //   setTimeout(() => {
+    //     this.setState({ apiStatus: null })
+    //   }, 3500)
+    // }
   };
   componentWillMount = () => {
     GlobalActions.fetchRotationData.defer();
@@ -117,14 +121,14 @@ class NewRotation extends React.Component {
       <div className="new-rotation container">
         <NavBar page="New" />
         <h2>New Rotation</h2>
-        <If condition={apiStatus == 'success'}>
+        <If condition={apiStatus!=null && apiStatus.success !=null}>
           <div className="alert alert-success">
-            <strong>Success!</strong> Data added successfully
+            <strong>Success!</strong> {apiStatus && apiStatus.success}
           </div>
         </If>
-        <If condition={apiStatus == 'error'}>
+        <If condition={apiStatus != null && apiStatus.error !=null}>
           <div className="alert alert-danger">
-            <strong>Failed!</strong> {apiStatus}
+            <strong>Failed!</strong> {apiStatus && apiStatus.error}
           </div>
         </If>
         <form className="new-form form-horizontal">

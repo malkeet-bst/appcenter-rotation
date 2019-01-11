@@ -7,24 +7,29 @@ import BsIcon from "../images/bluestack_icon.png";
 import RotationStore from "../store/RotationStore";
 import GlobalActions from "../actions/GlobalActions";
 import If from "./common/If";
+import EditRotation from "./EditRotation";
+import NewRotation from "./NewRotation";
 
 class Main extends React.Component {
   constructor(props, context) {
     super(props, context);
     this.state = this.getUpdatedState();
+    this.editData = this.editData.bind(this)
   }
 
   componentWillMount = () => {
-    let {selectedPartner}=this.state.RotationS
-    if(selectedPartner != null){
+    let { selectedPartner } = this.state.RotationS
+    if (selectedPartner != null) {
       GlobalActions.fetchRotationData.defer(selectedPartner);
-    }else
-    GlobalActions.fetchRotationData.defer();
+    } else
+      GlobalActions.fetchRotationData.defer();
   };
 
   getUpdatedState = () => {
+
     return {
       showRows: 10,
+      rotationRowData: [],
       RotationS: RotationStore.getState()
     };
   };
@@ -72,9 +77,21 @@ class Main extends React.Component {
       showRows: parseInt(document.getElementById("filterData").value)
     });
   };
+  editData = (data) => {
+    GlobalActions.setCurrentView('edit')
+    this.setState({
+      rotationRowData: data
+    });
+
+  };
+
+  addData = () => {
+    GlobalActions.setCurrentView('new')
+  }
   render() {
-    let { rotationData, apiStatus, partnerList,selectedPartner } = this.state.RotationS;
-    let dashboardUrl=Utils.getUrlFromInstance(Utils.getCloudInstance())
+    let { rotationData, apiStatus, partnerList, selectedPartner, currentView } = this.state.RotationS;
+    console.log(currentView)
+    let dashboardUrl = Utils.getUrlFromInstance(Utils.getCloudInstance())
     if (this.state.showRows && rotationData) {
       let number = this.state.showRows;
       rotationData = rotationData.slice(0, number);
@@ -106,18 +123,12 @@ class Main extends React.Component {
           <td>{data.uptime}</td>
           <td><a href={data.download_url} >{data.download_url}</a></td>
           <td>{data.sticky_app ? "true" : "false"}</td>
-          <td>{data.parameter}</td>
-          <td>{data.title}</td>
+          {/* <td>{data.parameter}</td>
+          <td>{data.title}</td> */}
           <td>
             <div className="row-actions">
-              <Link
-                to={{ pathname: "/edit", state: { data: rotationData[index] } }}
-              >
-                Edit
-              </Link>
-              <Link to="/" onClick={() => this.deleteClicked(data.id)}>
-                Delete
-              </Link>
+              <button className="btn btn-link" onClick={() => this.editData(data)} >Edit</button>
+              <button className="btn btn-link" onClick={() => this.deleteClicked(data.id)} >Delete</button>
             </div>
           </td>
         </tr>
@@ -125,15 +136,22 @@ class Main extends React.Component {
     }
     return (
       <div className="main">
-        <If condition={apiStatus == 'loading'}>
+        <If condition={apiStatus === 'loading'}>
           <div className="loading" />
         </If>
-        <If condition={apiStatus=='error'}>
-        <div className="alert alert-danger">
+        <If condition={apiStatus === 'error'}>
+          <div className="alert alert-danger">
             <strong>Some Error occured!</strong>
           </div>
         </If>
-        <If condition={rotationData != null}>
+        <If condition={currentView === 'edit'} >
+          <EditRotation data={this.state.rotationRowData} />
+        </If>
+        <If condition={currentView === 'new'} >
+          <NewRotation data={partnerList} />
+        </If>
+
+        <If condition={rotationData != null && currentView === 'home'}>
           <div className="home-nav">
             <a href={`${dashboardUrl}`}>Dashboard </a>
             <span className="nav-new-rotation">/ Bluestacks Rotation</span>
@@ -145,7 +163,8 @@ class Main extends React.Component {
             </div>
             <Link
               className="btn btn-primary btn-md glyphicon-plus"
-              to={{ pathname: "/new", state: { data: partnerList } }}
+              to={{ pathname: "/manage/rotation_cms/show" }}
+              onClick={() => this.addData()}
             >
               &nbsp; New Rotation
             </Link>
@@ -184,7 +203,7 @@ class Main extends React.Component {
               >
                 <span> View</span>
               </button> */}
-              <If condition={apiStatus == 'loading'}>
+              <If condition={apiStatus === 'loading'}>
                 <div className="loading"></div>
               </If>
             </div>
@@ -201,8 +220,8 @@ class Main extends React.Component {
                 <th>uptime</th>
                 <th>download_url</th>
                 <th>sticky app</th>
-                <th>parameter</th>
-                <th>title</th>
+                {/* <th>parameter</th>
+                <th>title</th> */}
                 <th>action</th>
               </tr>
             </thead>

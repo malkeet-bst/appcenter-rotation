@@ -18,9 +18,9 @@ export default class Utils {
       url = "https://appcenter-console.bluestacks.com/manage/"
       //url="http://10.1.174.197:8000/manage/"
     } else {
-      //prod
+      //engg
       url = "https://appcenter-console-engg.bluestacks.com/manage/"
-      
+      //url="http://10.1.174.197:8000/manage/"
     }
     return url
   }

@@ -39,21 +39,20 @@ class EditRotation extends React.Component {
 
   onChange = () => {
     this.setState({ apiStatus: RotationStore.state.apiStatus });
-    if (this.state.apiStatus != null) {
-      setTimeout(() => {
-        this.setState({ apiStatus: null });
-      }, 3500);
-    }
   };
   componentWillMount = () => {
     GlobalActions.fetchRotationData.defer();
   };
   componentDidMount = () => {
-    const { data } = this.props.location.state;
+    const { data } = this.props;
     let formData = {};
     Object.assign(formData, data);
-    formData.action = [{ value: data.action, label: data.action }];
-    this.setState({ formData: formData });
+    
+    if(data){
+      formData.action = [{ value: data.action, label: data.action }];
+      this.setState({ formData: formData });
+    }
+   
     RotationStore.listen(this.onChange);
   };
 
@@ -107,14 +106,14 @@ class EditRotation extends React.Component {
       <div className="new-rotation container">
         <NavBar page="Edit" />
         <h2>Horizontal form</h2>
-        <If condition={apiStatus == "success"}>
+        <If condition={apiStatus!=null && apiStatus.success !=null}>
           <div className="alert alert-success">
-            <strong>Success!</strong> Data updated successfully
+            <strong>Success!</strong> {apiStatus && apiStatus.success}
           </div>
         </If>
-        <If condition={apiStatus == "error"}>
+        <If condition={apiStatus != null && apiStatus.error !=null}>
           <div className="alert alert-danger">
-            <strong>Failed!</strong> {apiStatus}
+            <strong>Failed!</strong> {apiStatus && apiStatus.error}
           </div>
         </If>
         <form className="new-form form-horizontal">
@@ -218,6 +217,7 @@ class EditRotation extends React.Component {
                   onChange={this.updatevalue.bind(this, "image_url")}
                   value={formData.image_url}
                 />
+                <img style={{'height':'137px','marginTop':'12px'}} src={formData.image_url} alt="" />
               </div>
               <div className="col-sm-3">
                 <input type="file" name="" id="" onChange={this.uploadImage} />

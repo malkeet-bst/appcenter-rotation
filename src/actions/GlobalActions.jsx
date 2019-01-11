@@ -8,7 +8,8 @@ class GlobalActions {
       'deleteRotationBanner',
       'addRotation',
       'setSelectedPartner',
-      'updateRotation'
+      'updateRotation',
+      'setCurrentView'
     )
   }
 }
