@@ -14,12 +14,15 @@ class NavBar extends React.Component {
     };
   }
   homePage = () => {
+    //window.location.reload();
     GlobalActions.setCurrentView('home')
+    GlobalActions.fetchRotationData.defer();
   };
   render() {
     return (
       <div className="nav">
         <Link to="/manage">Dashboard </Link>/&nbsp;
+        {/* <a href="/manage/rotation_cms/show" onClick={this.homePage}> Bluestacks Rotation</a> */}
         <Link to="/manage/rotation_cms/show" onClick={this.homePage}> Bluestacks Rotation</Link>
         <If condition={this.props.page != undefined}>
           <span className="nav-new-rotation">/ {this.props.page} Rotation</span>

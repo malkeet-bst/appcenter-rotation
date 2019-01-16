@@ -60,12 +60,18 @@ class Main extends React.Component {
       ]
     })
   };
-  viewRotation = () => {
-    let partner = document.getElementById("selectedPartner").value;
-    GlobalActions.fetchRotationData.defer(partner);
+  
+  updateOrder = () => {
+    let reorderedArr=[]
+    for(var i=0;i<5;i++){
+     reorderedArr.push( document.getElementsByClassName("rotation-row")[i].innerText )
+    }
+    console.log(reorderedArr)
   };
   setPartner = () => {
     let partner = document.getElementById("selectedPartner").value;
+    document.getElementById("searchText").value='';
+    document.getElementById("filterData").value = "10";
     GlobalActions.fetchRotationData.defer(partner);
   }
   deleteRow = id => {
@@ -77,6 +83,26 @@ class Main extends React.Component {
       showRows: parseInt(document.getElementById("filterData").value)
     });
   };
+  searchFilter = () => {
+    let input, filter, table, tr, i;
+    input = document.getElementById("searchText");
+    filter = input.value.toUpperCase();
+    table = document.getElementById("myTable");
+    tr = table.getElementsByTagName("tr");
+    for (i = 0; i < tr.length; i++) {
+      let tdString = ''
+      for (var j = 0; j < tr[i].getElementsByTagName("td").length; j++) {
+        tdString += tr[i].getElementsByTagName("td")[j].textContent
+      }
+      if (tdString) {
+        if (tdString.toUpperCase().indexOf(filter) > -1) {
+          tr[i].style.display = "";
+        } else {
+          tr[i].style.display = "none";
+        }
+      }
+    }
+  }
   editData = (data) => {
     GlobalActions.setCurrentView('edit')
     this.setState({
@@ -90,12 +116,13 @@ class Main extends React.Component {
   }
   render() {
     let { rotationData, apiStatus, partnerList, selectedPartner, currentView } = this.state.RotationS;
-    console.log(currentView)
     let dashboardUrl = Utils.getUrlFromInstance(Utils.getCloudInstance())
+    console.log({rotationData})
     if (this.state.showRows && rotationData) {
       let number = this.state.showRows;
       rotationData = rotationData.slice(0, number);
     }
+    console.log({rotationData})
     let rowData = null;
     let partnerOptions = null;
     if (partnerList) {
@@ -107,17 +134,17 @@ class Main extends React.Component {
     }
     if (rotationData) {
       rowData = rotationData.map((data, index) => (
-        <tr key={index}>
-          <td>{data.id}</td>
+        <tr key={index} >
+          <td className="rotation-row">{data.id}</td>
           <td>{data.package_name}</td>
           <td>{data.game_name}</td>
           <td>{data.action}</td>
           <td>
-            <img
+            <a href={data.image_url} target="view_window"><img
               style={{ height: "80px" }}
               src={data.image_url}
               alt={data.image_url}
-            />
+            /></a>
           </td>
           <td>{data.order}</td>
           <td>{data.uptime}</td>
@@ -137,7 +164,7 @@ class Main extends React.Component {
     return (
       <div className="main">
         <If condition={apiStatus === 'loading'}>
-          <div className="loading" />
+          <div className="page-loader" />
         </If>
         <If condition={apiStatus === 'error'}>
           <div className="alert alert-danger">
@@ -151,7 +178,7 @@ class Main extends React.Component {
           <NewRotation data={partnerList} />
         </If>
 
-        <If condition={rotationData != null && currentView === 'home'}>
+        <If condition={ currentView === 'home'}>
           <div className="home-nav">
             <a href={`${dashboardUrl}`}>Dashboard </a>
             <span className="nav-new-rotation">/ Bluestacks Rotation</span>
@@ -185,9 +212,10 @@ class Main extends React.Component {
               </select>
               <input
                 type="text"
-                style={{ visibility: "hidden" }}
+                onKeyUp={this.searchFilter}
                 className="form-control"
-                id="text"
+                placeholder="search"
+                id="searchText"
               />
             </div>
 
@@ -196,19 +224,20 @@ class Main extends React.Component {
               <select className="custom-dropdown" onChange={this.setPartner} id="selectedPartner" value={`${selectedPartner}`}>
                 {partnerOptions}
               </select>
-              {/* <button
+              <button onClick={this.setPartner} class="btn btn-info"><span class="glyphicon glyphicon-refresh"></span> Refresh</button>
+              {/*<button
                 type="button"
-                onClick={this.viewRotation}
+                onClick={this.updateOrder}
                 className="btn btn-info btn-md"
               >
-                <span> View</span>
+                <span> Save Order</span>
               </button> */}
               <If condition={apiStatus === 'loading'}>
-                <div className="loading"></div>
+                <div className="page-loader"></div>
               </If>
             </div>
           </div>
-          <table className="rotation-table table table-striped">
+          <table id="myTable" className="rotation-table table table-striped">
             <thead>
               <tr>
                 <th>id</th>

@@ -18,6 +18,7 @@ class EditRotation extends React.Component {
       selectedPartner: null,
       selectedAction: "",
       disableForm: false,
+      showCloseImageIcon:false,
       apiStatus: null,
       formData: {
         id: "",
@@ -49,7 +50,7 @@ class EditRotation extends React.Component {
     Object.assign(formData, data);
     
     if(data){
-      formData.action = [{ value: data.action, label: data.action }];
+      formData.action = { value: data.action, label: data.action };
       this.setState({ formData: formData });
     }
    
@@ -75,6 +76,29 @@ class EditRotation extends React.Component {
     data.image_file = event.target.files[0];
     this.setState({ formData: data });
   };
+  uploadImage = event => {
+
+    let data = this.state.formData;
+    data.image_file = event.target.files[0];
+    this.setState({ formData: data,showCloseImageIcon:true });
+    this.setImgPreview(event)
+  };
+  setImgPreview = (input) => {
+    if (input && input.target && input.target.files[0]) {
+      var reader = new FileReader();
+      reader.onload = function (e) {
+        document.getElementById('uploadedImage').setAttribute("src", e.target.result);
+      };
+      reader.readAsDataURL(input.target.files[0]);
+    }
+  }
+  removeImage = () => {
+    let { formData } = this.state;
+    document.getElementById('uploadedImage').setAttribute("src", '');
+    document.getElementById('imageUploader').value = ''
+    formData.image_file = '';
+    this.setState({ formData: formData ,showCloseImageIcon:false});
+  }
   deleteUploadedImage = () => {
     let data = this.state.formData;
     data.image_file = "";
@@ -96,12 +120,13 @@ class EditRotation extends React.Component {
   };
 
   onFormSubmit = event => {
+
     GlobalActions.updateRotation(this.state.formData);
     //this.props.history.push("/");
   };
 
   render() {
-    let { apiStatus, formData } = this.state;
+    let { apiStatus, formData ,showCloseImageIcon} = this.state;
     return (
       <div className="new-rotation container">
         <NavBar page="Edit" />
@@ -164,6 +189,32 @@ class EditRotation extends React.Component {
                 />
               </div>
             </div>
+            <If condition={formData.action.value === 'open_in_emulator' || formData.action.value === 'open_in_browser'}>
+            <div className="form-group">
+              <label className="control-label col-sm-3">Parameter</label>
+              <div className="col-sm-9">
+                <input
+                  type="text"
+                  className="form-control"
+                  onChange={this.updatevalue.bind(this, "parameter")}
+                  value={formData.parameter}
+                />
+              </div>
+            </div>
+            </If>
+            <If condition={formData.action === 'open_in_emulator'}>
+            <div className="form-group">
+              <label className="control-label col-sm-3">Title</label>
+              <div className="col-sm-9">
+                <input
+                  type="text"
+                  className="form-control"
+                  onChange={this.updatevalue.bind(this, "title")}
+                  value={formData.title}
+                />
+              </div>
+            </div>
+            </If>
             <div className="form-group">
               <label className="control-label col-sm-3">Partner</label>
               <div className="col-sm-9">
@@ -186,28 +237,7 @@ class EditRotation extends React.Component {
                 />
               </div>
             </div>
-            <div className="form-group">
-              <label className="control-label col-sm-3">Parameter</label>
-              <div className="col-sm-9">
-                <input
-                  type="text"
-                  className="form-control"
-                  onChange={this.updatevalue.bind(this, "parameter")}
-                  value={formData.parameter}
-                />
-              </div>
-            </div>
-            <div className="form-group">
-              <label className="control-label col-sm-3">Title</label>
-              <div className="col-sm-9">
-                <input
-                  type="text"
-                  className="form-control"
-                  onChange={this.updatevalue.bind(this, "title")}
-                  value={formData.title}
-                />
-              </div>
-            </div>
+           
             <div className="form-group">
               <label className="control-label col-sm-3">Upload image</label>
               <div className="col-sm-6">
@@ -220,10 +250,13 @@ class EditRotation extends React.Component {
                 <img style={{'height':'137px','marginTop':'12px'}} src={formData.image_url} alt="" />
               </div>
               <div className="col-sm-3">
-                <input type="file" name="" id="" onChange={this.uploadImage} />
-                {/* <button type="button" onClick={this.deleteUploadedImage} className="btn btn-info btn-md ">
-              <span> Remove</span>
-            </button> */}
+              <input type="file" name="" id="imageUploader" onChange={this.uploadImage} />
+              <img style={{ 'height': '137px', 'marginTop': '12px' }} id="uploadedImage" src="#" alt="" />
+              <If condition={showCloseImageIcon}>
+              <button style={{ 'position': 'absolute', 'right': '0px' }} type="button" onClick={this.removeImage} class="close" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+              </button>
+              </If>
               </div>
             </div>
             <div className="form-group">
@@ -263,7 +296,7 @@ class EditRotation extends React.Component {
           </fieldset>
         </form>
         <If condition={apiStatus == "loading"}>
-          <div className="loading" />
+          <div className="page-loader" />
         </If>
       </div>
     );

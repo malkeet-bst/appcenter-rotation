@@ -4,7 +4,7 @@
   width: 100vw;
   display: flex;
   justify-content: center;
-  .loading {
+  .page-loader {
     font-size: 0.2rem;
     color: white;
     top: calc(50% - 65px);
@@ -105,6 +105,10 @@
         height: 30px;
         width: 100%;
       }
+    }
+    .form-group.required .control-label:after {
+      content:"*";
+      color:red;
     }
   }
 }

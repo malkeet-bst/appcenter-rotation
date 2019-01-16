@@ -14,8 +14,8 @@ class App extends React.Component {
       {/* basename={`${window.location.href}`} */}
         <MemoryRouter  >
           <Switch>
-            <Route path="/manage/rotation_cms" component={Main} exact />
-            <Redirect from="*" to="/manage/rotation_cms" />
+            <Route path="/manage/rotation_cms/show" component={Main} exact />
+            <Redirect from="*" to="/manage/rotation_cms/show" />
           </Switch>
         </MemoryRouter>
       </div>

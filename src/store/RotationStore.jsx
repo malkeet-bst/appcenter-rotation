@@ -16,6 +16,7 @@ export class RotationStore {
 
          onSetCurrentView(view) {
            this.currentView = view;
+           this.apiStatus = null;
          }
          onSetSelectedPartner = partner => {
            this.selectedPartner = partner;
@@ -85,7 +86,6 @@ export class RotationStore {
            if (data && data.image_file) {
              data.image_url = "";
            }
-           console.log({ data });
            var fd = new FormData();
            for (var property in data) {
              fd.append(property, data[property]);
@@ -114,15 +114,15 @@ export class RotationStore {
            this.emitChange();
          }
          async onUpdateRotation(formData) {
+           debugger
            let data = {};
            Object.assign(data, formData);
            this.apiStatus = "loading";
            if (data && data.image_file) {
              data.image_url = "";
            }
-           console.log({ data });
            if (data.action) {
-             data.action = data.action.value;
+             data.action = data.action.value 
            }
            var fd = new FormData();
            for (var property in data) {

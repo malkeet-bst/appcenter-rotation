@@ -19,6 +19,7 @@ class NewRotation extends React.Component {
     this.state = {
       savingData: null,
       apiStatus: null,
+      showCloseImageIcon: false,
       newData: {
         id: "",
         game_name: "",
@@ -39,23 +40,18 @@ class NewRotation extends React.Component {
   componentDidMount = () => {
     const { data } = this.props;
     let partnerList = [];
-    if(data){
+    if (data) {
       data.forEach(partner => {
         partnerList.push({ value: partner, label: partner });
       });
       this.setState({ partnerList });
     }
-    
+
     RotationStore.listen(this.onChange);
-    
+
   };
   onChange = () => {
     this.setState({ apiStatus: RotationStore.state.apiStatus });
-    // if (this.state.apiStatus != null) {
-    //   setTimeout(() => {
-    //     this.setState({ apiStatus: null })
-    //   }, 3500)
-    // }
   };
   componentWillMount = () => {
     GlobalActions.fetchRotationData.defer();
@@ -66,10 +62,28 @@ class NewRotation extends React.Component {
     RotationStore.unlisten(this.onChange);
   };
   uploadImage = event => {
+
     let { newData } = this.state;
     newData.image_file = event.target.files[0];
-    this.setState({ newData: newData });
+    this.setState({ newData: newData, showCloseImageIcon: true });
+    this.setImgPreview(event)
   };
+  setImgPreview = (input) => {
+    if (input && input.target && input.target.files[0]) {
+      var reader = new FileReader();
+      reader.onload = function (e) {
+        document.getElementById('uploadedImage').setAttribute("src", e.target.result);
+      };
+      reader.readAsDataURL(input.target.files[0]);
+    }
+  }
+  removeImage = () => {
+    let { newData } = this.state;
+    document.getElementById('uploadedImage').setAttribute("src", '');
+    document.getElementById('imageUploader').value = ''
+    newData.image_file = '';
+    this.setState({ newData: newData, showCloseImageIcon: false });
+  }
   onPartnerSelect = selectedPartner => {
     let newData = this.state.newData;
 
@@ -115,24 +129,26 @@ class NewRotation extends React.Component {
       menuBar,
       selectedAction,
       partnerList,
-      apiStatus
+      apiStatus, newData,
+      showCloseImageIcon
     } = this.state;
     return (
       <div className="new-rotation container">
         <NavBar page="New" />
         <h2>New Rotation</h2>
-        <If condition={apiStatus!=null && apiStatus.success !=null}>
+
+        <If condition={apiStatus != null && apiStatus.success != null}>
           <div className="alert alert-success">
             <strong>Success!</strong> {apiStatus && apiStatus.success}
           </div>
         </If>
-        <If condition={apiStatus != null && apiStatus.error !=null}>
+        <If condition={apiStatus != null && apiStatus.error != null}>
           <div className="alert alert-danger">
             <strong>Failed!</strong> {apiStatus && apiStatus.error}
           </div>
         </If>
         <form className="new-form form-horizontal">
-          <div className="form-group">
+          {/* <div className="form-group">
             <label className="control-label col-sm-3">Game Name</label>
             <div id="game_name" className="col-sm-9 multi-select">
               <input
@@ -141,10 +157,10 @@ class NewRotation extends React.Component {
                 className="form-control"
               />
             </div>
-          </div>
+          </div> */}
 
-          <div className="form-group">
-            <label className="control-label col-sm-3">Package Name</label>
+          <div className="form-group required">
+            <label className="control-label col-sm-3 ">Package Name</label>
             <div className="col-sm-9">
               <input
                 type="text"
@@ -153,7 +169,7 @@ class NewRotation extends React.Component {
               />
             </div>
           </div>
-          <div className="form-group">
+          <div className="form-group required">
             <label className="control-label col-sm-3">Action</label>
             <div className="col-sm-9">
               <Select
@@ -163,7 +179,31 @@ class NewRotation extends React.Component {
               />
             </div>
           </div>
-          <div className="form-group">
+          <If condition={newData.action === 'open_in_emulator'}>
+            <div className="form-group required">
+              <label className="control-label required col-sm-3">Title</label>
+              <div className="col-sm-9">
+                <input
+                  type="text"
+                  onChange={this.updatevalue.bind(this, "title")}
+                  className="form-control"
+                />
+              </div>
+            </div>
+          </If>
+          <If condition={newData.action === 'open_in_emulator' || newData.action === 'open_in_browser'}>
+            <div className="form-group required">
+              <label className="control-label col-sm-3">Parameter</label>
+              <div className="col-sm-9">
+                <input
+                  type="text"
+                  onChange={this.updatevalue.bind(this, "parameter")}
+                  className="form-control"
+                />
+              </div>
+            </div>
+          </If>
+          <div className="form-group required">
             <label className="control-label col-sm-3">Partner</label>
             <div className="col-sm-9 multi-select">
               <Select
@@ -190,27 +230,8 @@ class NewRotation extends React.Component {
               />
             </div>
           </div>
-          <div className="form-group">
-            <label className="control-label col-sm-3">Parameter</label>
-            <div className="col-sm-9">
-              <input
-                type="text"
-                onChange={this.updatevalue.bind(this, "parameter")}
-                className="form-control"
-              />
-            </div>
-          </div>
-          <div className="form-group">
-            <label className="control-label col-sm-3">Title</label>
-            <div className="col-sm-9">
-              <input
-                type="text"
-                onChange={this.updatevalue.bind(this, "title")}
-                className="form-control"
-              />
-            </div>
-          </div>
-          <div className="form-group">
+
+          <div className="form-group required">
             <label className="control-label col-sm-3">Upload image</label>
             <div className="col-sm-6">
               <input
@@ -218,21 +239,19 @@ class NewRotation extends React.Component {
                 className="form-control"
                 onChange={this.updatevalue.bind(this, "image_url")}
               />
+              <img style={{ 'height': '137px', 'marginTop': '12px' }} src={newData.image_url} alt="" />
             </div>
             <div className="col-sm-3">
-              <input type="file" name="" id="" onChange={this.uploadImage} />
-              {/* <If condition={this.state.newData != null && this.state.newData.image_file != null}>
-                <button
-                  type="button"
-                  onClick={this.deleteUploadedImage}
-                  className="btn btn-info btn-md "
-                >
-                  <span> Remove</span>
+              <input type="file" name="" id="imageUploader" onChange={this.uploadImage} />
+              <img style={{ 'height': '137px', 'marginTop': '12px' }} id="uploadedImage" src="#" alt="" />
+              <If condition={showCloseImageIcon}>
+                <button style={{ 'position': 'absolute', 'right': '0px' }} type="button" onClick={this.removeImage} className="close" aria-label="Close">
+                  <span aria-hidden="true">&times;</span>
                 </button>
-              </If> */}
+              </If>
             </div>
           </div>
-          <div className="form-group">
+          <div className="form-group required">
             <label className="control-label col-sm-3">order</label>
             <div className="col-sm-9">
               <input
@@ -243,7 +262,7 @@ class NewRotation extends React.Component {
               />
             </div>
           </div>
-          <div className="form-group">
+          {/* <div className="form-group">
             <label className="control-label col-sm-3">Download url</label>
             <div className="col-sm-9">
               <input
@@ -252,7 +271,7 @@ class NewRotation extends React.Component {
                 className="form-control"
               />
             </div>
-          </div>
+          </div> */}
 
           <div className="form-group">
             <div className="col-sm-offset-3 col-sm-9">
@@ -266,7 +285,7 @@ class NewRotation extends React.Component {
           </div>
         </form>
         <If condition={apiStatus == 'loading'}>
-          <div className="loading" />
+          <div className="page-loader" />
         </If>
 
       </div>
