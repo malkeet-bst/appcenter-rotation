@@ -114,7 +114,7 @@ export class RotationStore {
            this.emitChange();
          }
          async onUpdateRotation(formData) {
-           debugger
+
            let data = {};
            Object.assign(data, formData);
            this.apiStatus = "loading";
