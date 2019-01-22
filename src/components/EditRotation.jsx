@@ -271,6 +271,7 @@ class EditRotation extends React.Component {
                 />
               </div>
             </div>
+            <If condition={ formData.action.value !== 'open_in_browser'}>
             <div className="form-group">
               <label className="control-label col-sm-3">Download url</label>
               <div className="col-sm-9">
@@ -282,7 +283,7 @@ class EditRotation extends React.Component {
                 />
               </div>
             </div>
-
+            </If>
             <div className="form-group">
               <div className="col-sm-offset-3 col-sm-9">
                 <input

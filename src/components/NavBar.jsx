@@ -4,6 +4,7 @@ import { Link } from "react-router-dom";
 import If from "./common/If";
 import { withRouter } from "react-router";
 import GlobalActions from '../actions/GlobalActions'
+import Utils from '../utils/util'
 
 class NavBar extends React.Component {
   constructor(props) {
@@ -15,14 +16,18 @@ class NavBar extends React.Component {
   }
   homePage = () => {
     //window.location.reload();
+    
     GlobalActions.setCurrentView('home')
     GlobalActions.fetchRotationData.defer();
   };
   render() {
+    let dashboardUrl = Utils.getUrlFromInstance(Utils.getCloudInstance())
+    
     return (
       <div className="nav">
-        <Link to="/manage">Dashboard </Link>/&nbsp;
+        {/* <Link to="/manage">Dashboard </Link>/&nbsp; */}
         {/* <a href="/manage/rotation_cms/show" onClick={this.homePage}> Bluestacks Rotation</a> */}
+        <a href={`${dashboardUrl}`}>Dashboard / </a>
         <Link to="/manage/rotation_cms/show" onClick={this.homePage}> Bluestacks Rotation</Link>
         <If condition={this.props.page != undefined}>
           <span className="nav-new-rotation">/ {this.props.page} Rotation</span>
