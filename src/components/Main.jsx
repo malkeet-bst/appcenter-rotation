@@ -71,8 +71,10 @@ class Main extends React.Component {
   setPartner = () => {
     let partner = document.getElementById("selectedPartner").value;
     document.getElementById("searchText").value='';
-    document.getElementById("filterData").value = "10";
+    
+    document.getElementById("filterData").value = "50";
     GlobalActions.fetchRotationData.defer(partner);
+ 
   }
   deleteRow = id => {
     let partner = document.getElementById("selectedPartner").value;
@@ -202,13 +204,15 @@ class Main extends React.Component {
               <select
                 id="filterData"
                 className="custom-dropdown"
-                defaultValue="10"
+                defaultValue="50"
                 onChange={this.filterData}
               >
                 <option value="5">5</option>
                 <option value="10">10</option>
                 <option value="15">15</option>
-                <option value="20">50</option>
+                <option value="50">50</option>
+                <option value="10">100</option>
+                <option value="500">500</option>
               </select>
               <input
                 type="text"
