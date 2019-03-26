@@ -9,7 +9,7 @@ export default class Utils {
   static urlParams = new URLSearchParams(window.location.search)
 
   static getCloudInstance() {
-    let instance = window.instance
+    let instance = this.urlParams.get('instance')
     console.log({instance})
     return instance
   }

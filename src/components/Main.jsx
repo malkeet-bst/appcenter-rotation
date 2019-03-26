@@ -28,7 +28,7 @@ class Main extends React.Component {
   getUpdatedState = () => {
 
     return {
-      showRows: 10,
+      showRows: 50,
       rotationRowData: [],
       RotationS: RotationStore.getState()
     };
@@ -211,7 +211,7 @@ class Main extends React.Component {
                 <option value="10">10</option>
                 <option value="15">15</option>
                 <option value="50">50</option>
-                <option value="10">100</option>
+                <option value="100">100</option>
                 <option value="500">500</option>
               </select>
               <input
